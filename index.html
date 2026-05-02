@@ -589,7 +589,7 @@
 <div class="container">
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="showTab('checklist')">✅ قائمة اليوم</button>
-    <button class="tab-btn" onclick="showTab('breakfast')">🌅 الفطور</button>
+    <button class="tab-btn" onclick="showTab('breakfast')">🌅 الفطور الصباح</button>
     <button class="tab-btn" onclick="showTab('snack')">🍎 السناك</button>
     <button class="tab-btn" onclick="showTab('lunch')">🍗 الغداء</button>
     <button class="tab-btn" onclick="showTab('workout')">💪 التمرين</button>
@@ -615,7 +615,7 @@
       <div class="checklist" id="daily-checklist">
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">✓</div>
-          <span>🌅 <strong>الفطور</strong> — <span class="cal-breakfast">350</span> سعرة (حاول تأخيره قدر الإمكان)</span>
+          <span>🌅 <strong>الفطور الصباح</strong> — <span class="cal-breakfast">350</span> سعرة (حاول تأخيره قدر الإمكان)</span>
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">✓</div>
@@ -659,7 +659,7 @@
         <div class="meal-header" onclick="toggleCard(this.parentElement)">
           <div class="meal-icon" style="background:linear-gradient(135deg,rgba(255,209,102,0.2),rgba(255,107,53,0.2))">🌅</div>
           <div class="meal-info">
-            <div class="meal-name">الفطور</div>
+            <div class="meal-name">الفطور الصباح</div>
             <div class="meal-sub">حاول تأخيره قدر الإمكان للشبع أطول</div>
           </div>
           <div class="meal-cal"><span class="cal-breakfast">350</span> <span>سعرة</span></div>
@@ -667,9 +667,9 @@
         </div>
         <div class="meal-body">
           <div class="note-box">
-            🔑 <strong>مع كل وجبة فطور:</strong> جرعة ملتي فيتامين + بي كومبلكس + خضار 250 جرام | الخبز: ممكن أسمر أو أبيض أو صاج أو شوفان
+            🔑 <strong>مع كل وجبة فطور الصباح:</strong> جرعة ملتي فيتامين + بي كومبلكس + خضار 250 جرام | الخبز: ممكن أسمر أو أبيض أو صاج أو شوفان
           </div>
-          <div class="options-label">اختر خياراً واحداً للفطور</div>
+          <div class="options-label">اختر خياراً واحداً للفطور الصباح</div>
           <div class="option-item" onclick="selectOption(this,'breakfast')">
             <div class="option-num">1</div>
             <div class="option-text">خبز أسمر <strong id="b1_bread">55</strong> جرام + كبدة قبل الطبخ <strong id="b1_liver">100</strong> جرام مقلية مع بصل + <strong>5</strong> جرام زيت زيتون</div>
@@ -708,7 +708,7 @@
           </div>
           <div class="option-item" onclick="selectOption(this,'breakfast')">
             <div class="option-num">10</div>
-            <div class="option-text">🍽️ أي وصفة من دليل الوصفات (وصفات فطور أو وصفات <strong class="cal-breakfast">350</strong> سعرة)</div>
+            <div class="option-text">🍽️ أي وصفة من دليل الوصفات (وصفات فطور الصباح أو وصفات <strong class="cal-breakfast">350</strong> سعرة)</div>
           </div>
         </div>
       </div>
@@ -876,7 +876,7 @@
             💊 <strong>مكملات العشاء:</strong> حبتين أوميغا 3 + فيتامين D 2000 + مغنيسيوم 400 | يفضل إضافة الميلاتونين والأشواغندا لتحسين النوم
           </div>
           <div class="note-box" style="margin-top:8px; border-color:rgba(100,200,255,0.2)">
-            ✅ يمكن اعتماد أي خيار من خيارات الفطور كعشاء 3 مرات أسبوعياً
+            ✅ يمكن اعتماد أي خيار من خيارات الفطور الصباح كعشاء 3 مرات أسبوعياً
           </div>
           <div style="margin-top:16px; background:var(--dark3); border-radius:14px; padding:16px; border:1px solid var(--border)">
             <div style="font-size:0.85rem; font-weight:800; color:var(--cyan); margin-bottom:10px">🍱 تجهيز وجبات الأسبوع (موصى به)</div>
@@ -917,7 +917,7 @@
       <div style="margin-top:20px; background:var(--dark3); border:1.5px solid rgba(255,209,102,0.2); border-radius:16px; padding:18px">
         <div style="font-size:0.9rem; font-weight:800; color:var(--gold); margin-bottom:12px">💊 المكملات الغذائية اليومية</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--cyan); font-weight:700; margin-bottom:4px">الفطور</div>ملتي فيتامين + بي كومبلكس</div>
+          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--cyan); font-weight:700; margin-bottom:4px">الفطور الصباح</div>ملتي فيتامين + بي كومبلكس</div>
           <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--green); font-weight:700; margin-bottom:4px">بعد التمرين</div>5 جرام كرياتين + واي بروتين</div>
           <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--gold); font-weight:700; margin-bottom:4px">العشاء</div>أوميغا 3 (حبتين) + فيتامين D 2000 + مغنيسيوم 400</div>
           <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--text-dim); font-weight:700; margin-bottom:4px">للنوم (اختياري)</div>ميلاتونين + أشواغندا</div>
