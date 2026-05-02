@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خطة غذائية ذكية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00e5ff;
+    --cyan-dim: #00b8d4;
+    --dark: #0a0e14;
+    --dark2: #111820;
+    --dark3: #1a2332;
+    --card: #141c28;
+    --card2: #1e2d3d;
+    --text: #e8f4f8;
+    --text-dim: #7a9bb5;
+    --gold: #ffd166;
+    --green: #06d6a0;
+    --orange: #ff6b35;
+    --red: #ef476f;
+    --border: rgba(0,229,255,0.15);
+    --glow: 0 0 20px rgba(0,229,255,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0,180,200,0.05) 0%, transparent 50%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 16px; position:relative; z-index:1; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0a1520 0%, #0d1e2e 50%, #0a1520 100%);
+    border-bottom: 2px solid var(--cyan);
+    box-shadow: 0 4px 40px rgba(0,229,255,0.15);
+    padding: 24px 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .logo { font-family:'Cairo',sans-serif; font-weight:900; font-size:2rem; color:var(--cyan); letter-spacing:4px; text-shadow:0 0 30px rgba(0,229,255,0.5); text-transform:uppercase; }
+  .header-title { text-align:center; flex:1; }
+  .header-title h1 { font-size:1.3rem; font-weight:700; color:var(--text); line-height:1.3; }
+  .header-title span { font-size:0.8rem; color:var(--text-dim); font-weight:400; }
+  .calories-badge {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    color:#000; font-weight:900; font-size:0.85rem; padding:6px 14px;
+    border-radius:20px; white-space:nowrap; box-shadow:var(--glow);
+  }
+
+  /* COACH BTN */
+  .coach-btn {
+    position:fixed; bottom:24px; right:24px; z-index:200;
+    background: linear-gradient(135deg,#1a2332,#0d1e2e);
+    border: 1.5px solid var(--cyan);
+    color: var(--cyan);
+    padding: 10px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family:'Cairo',sans-serif;
+    font-size: 0.85rem;
+    font-weight:700;
+    box-shadow: var(--glow);
+    transition: all 0.25s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .coach-btn:hover { background: rgba(0,229,255,0.15); transform:scale(1.04); }
+  .coach-btn.active { background: linear-gradient(135deg,var(--cyan),var(--cyan-dim)); color:#000; }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    display:none;
+    position:fixed; inset:0; z-index:500;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.show { display:flex; }
+  .modal-box {
+    background: var(--dark2);
+    border: 1.5px solid var(--cyan);
+    border-radius: 24px;
+    padding: 32px 28px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 0 60px rgba(0,229,255,0.2);
+    animation: slideUp 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  @keyframes slideUp {
+    from { transform:translateY(30px); opacity:0; }
+    to { transform:translateY(0); opacity:1; }
+  }
+  .modal-title {
+    font-size:1.1rem; font-weight:800; color:var(--cyan);
+    margin-bottom:20px; display:flex; align-items:center; gap:10px;
+  }
+  .modal-close {
+    margin-right:auto; background:none; border:none;
+    color:var(--text-dim); font-size:1.4rem; cursor:pointer;
+    transition:color 0.2s; line-height:1;
+  }
+  .modal-close:hover { color:var(--red); }
+
+  /* FORM STYLES */
+  .form-group { margin-bottom:16px; }
+  .form-label { font-size:0.82rem; font-weight:700; color:var(--text-dim); margin-bottom:6px; display:block; }
+  .form-input, .form-select {
+    width:100%;
+    background: var(--dark3);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family:'Cairo',sans-serif;
+    font-size:0.88rem;
+    outline:none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus { border-color:var(--cyan); }
+  .form-select option { background: var(--dark3); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-btn {
+    width:100%; padding:12px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    border:none; border-radius:12px;
+    color:#000; font-family:'Cairo',sans-serif;
+    font-size:0.9rem; font-weight:800;
+    cursor:pointer; transition: transform 0.2s, box-shadow 0.2s;
+    margin-top:8px;
+  }
+  .form-btn:hover { transform:scale(1.02); box-shadow:var(--glow); }
+  .form-error { color:var(--red); font-size:0.8rem; margin-top:6px; display:none; }
+
+  /* FULL PAGE LOCK SCREEN */
+  #lockScreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--dark);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  #lockScreen::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,255,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0,180,200,0.07) 0%, transparent 50%);
+    pointer-events:none;
+  }
+  .lock-box {
+    background: var(--dark2);
+    border: 1.5px solid var(--cyan);
+    border-radius: 28px;
+    padding: 40px 32px;
+    width: 90%; max-width: 400px;
+    box-shadow: 0 0 80px rgba(0,229,255,0.18);
+    text-align: center;
+    position: relative; z-index: 1;
+    animation: slideUp 0.4s ease;
+  }
+  .lock-logo { font-size:1.4rem; font-weight:900; color:var(--cyan); letter-spacing:4px; margin-bottom:6px; text-shadow:0 0 30px rgba(0,229,255,0.5); }
+  .lock-icon { font-size:3rem; margin-bottom:14px; }
+  .lock-title { font-size:1.1rem; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .lock-sub { font-size:0.82rem; color:var(--text-dim); margin-bottom:24px; line-height:1.5; }
+
+  /* PASSWORD SCREEN */
+  .pw-screen { text-align:center; }
+  .pw-icon { font-size:3rem; margin-bottom:12px; }
+  .pw-title { font-size:1rem; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .pw-sub { font-size:0.8rem; color:var(--text-dim); margin-bottom:20px; }
+  .pw-input {
+    width:100%; background:var(--dark3); border:1.5px solid var(--border);
+    border-radius:10px; padding:12px 16px; color:var(--text);
+    font-family:'Cairo',sans-serif; font-size:1rem; text-align:center;
+    letter-spacing:4px; outline:none; transition:border-color 0.2s;
+    margin-bottom:8px;
+  }
+  .pw-input:focus { border-color:var(--cyan); }
+  .pw-input.shake {
+    animation: shake 0.4s ease;
+    border-color: var(--red);
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-6px)}
+    80%{transform:translateX(6px)}
+  }
+
+  /* TOTAL BAR */
+  .total-bar { background:var(--dark2); border-bottom:1px solid var(--border); padding:12px 0; }
+  .macros-row { display:flex; justify-content:center; gap:24px; flex-wrap:wrap; }
+  .macro-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .macro-num { font-size:1.4rem; font-weight:800; color:var(--cyan); }
+  .macro-label { font-size:0.72rem; color:var(--text-dim); font-weight:600; }
+  .macro-divider { width:1px; height:40px; background:var(--border); align-self:center; }
+
+  /* NAV TABS */
+  .nav-tabs { padding:20px 0 0; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; }
+  .nav-tabs::-webkit-scrollbar { display:none; }
+  .tab-btn {
+    background:var(--dark2); border:1.5px solid var(--border); color:var(--text-dim);
+    padding:10px 18px; border-radius:12px; cursor:pointer;
+    font-family:'Cairo',sans-serif; font-size:0.85rem; font-weight:600;
+    white-space:nowrap; transition:all 0.25s; flex-shrink:0;
+  }
+  .tab-btn:hover { border-color:var(--cyan); color:var(--cyan); background:rgba(0,229,255,0.06); }
+  .tab-btn.active { background:var(--cyan); color:#000; border-color:var(--cyan); box-shadow:var(--glow); font-weight:800; }
+
+  /* SECTIONS */
+  .section { display:none; padding:24px 0 60px; }
+  .section.active { display:block; }
+
+  /* CLIENT BANNER */
+  .client-banner {
+    background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(0,100,180,0.08));
+    border: 1.5px solid rgba(0,229,255,0.25);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .client-avatar {
+    width:48px; height:48px; border-radius:50%;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; font-weight:900; color:#000; flex-shrink:0;
+  }
+  .client-info { flex:1; }
+  .client-name { font-size:1rem; font-weight:800; color:var(--text); }
+  .client-details { font-size:0.78rem; color:var(--text-dim); margin-top:2px; }
+  .client-goal-badge {
+    padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;
+  }
+  .goal-cut { background:rgba(239,71,111,0.2); color:var(--red); }
+  .goal-bulk { background:rgba(6,214,160,0.2); color:var(--green); }
+  .goal-maintain { background:rgba(0,229,255,0.15); color:var(--cyan); }
+
+  /* MEAL CARD */
+  .meal-card {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:20px; margin-bottom:20px; overflow:hidden;
+    transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .meal-card:hover { border-color:rgba(0,229,255,0.35); box-shadow:var(--glow); }
+  .meal-header {
+    display:flex; align-items:center; gap:14px;
+    padding:16px 20px; cursor:pointer; user-select:none;
+  }
+  .meal-icon {
+    width:48px; height:48px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; flex-shrink:0;
+  }
+  .meal-info { flex:1; }
+  .meal-name { font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:3px; }
+  .meal-sub { font-size:0.78rem; color:var(--text-dim); font-weight:400; }
+  .meal-cal { font-size:1.1rem; font-weight:800; color:var(--cyan); }
+  .meal-cal span { font-size:0.7rem; color:var(--text-dim); font-weight:400; }
+  .meal-toggle { color:var(--text-dim); font-size:1.2rem; transition:transform 0.3s; }
+  .meal-card.open .meal-toggle { transform:rotate(180deg); }
+  .meal-body { display:none; padding:0 20px 20px; border-top:1px solid var(--border); }
+  .meal-card.open .meal-body { display:block; }
+
+  /* OPTIONS */
+  .options-label {
+    font-size:0.75rem; font-weight:700; color:var(--cyan);
+    text-transform:uppercase; letter-spacing:1px; margin:16px 0 10px;
+  }
+  .option-item {
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+    background:var(--dark3); border:1.5px solid transparent; border-radius:12px;
+    margin-bottom:8px; cursor:pointer; transition:all 0.2s; position:relative;
+  }
+  .option-item:hover { border-color:rgba(0,229,255,0.25); background:var(--card2); }
+  .option-item.selected { border-color:var(--cyan); background:rgba(0,229,255,0.08); }
+  .option-item.selected::before {
+    content:'✓'; position:absolute; left:12px; top:50%;
+    transform:translateY(-50%); color:var(--cyan); font-weight:900; font-size:0.9rem;
+  }
+  .option-num {
+    width:24px; height:24px; background:var(--dark); border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:700; color:var(--text-dim); flex-shrink:0; margin-top:1px;
+  }
+  .option-item.selected .option-num { background:var(--cyan); color:#000; }
+  .option-text { font-size:0.88rem; line-height:1.6; color:var(--text); flex:1; }
+  .option-text strong { color:var(--cyan); font-weight:700; }
+
+  /* SNACK GRID */
+  .snack-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; margin-top:10px; }
+  .snack-item {
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:var(--dark3); border:1.5px solid transparent; border-radius:10px;
+    cursor:pointer; transition:all 0.2s; font-size:0.82rem; color:var(--text); line-height:1.4;
+  }
+  .snack-item:hover { border-color:rgba(0,229,255,0.2); background:var(--card2); }
+  .snack-item.selected { border-color:var(--green); background:rgba(6,214,160,0.07); }
+  .snack-dot { width:8px; height:8px; border-radius:50%; background:var(--text-dim); flex-shrink:0; transition:background 0.2s; }
+  .snack-item.selected .snack-dot { background:var(--green); }
+
+  /* PROTEIN CARB GRID */
+  .protein-carb-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .p-col-header {
+    text-align:center; font-size:0.78rem; font-weight:800; padding:8px;
+    border-radius:8px; margin-bottom:8px; letter-spacing:0.5px;
+  }
+  .protein-col .p-col-header { background:rgba(255,107,53,0.15); color:var(--orange); }
+  .p-option {
+    background:var(--dark3); border:1.5px solid transparent; border-radius:10px;
+    padding:10px 12px; font-size:0.82rem; line-height:1.5;
+    margin-bottom:8px; cursor:pointer; transition:all 0.2s; color:var(--text);
+  }
+  .p-option:hover { border-color:rgba(255,107,53,0.3); background:var(--card2); }
+  .p-option.selected { border-color:var(--orange); background:rgba(255,107,53,0.08); }
+  .c-option {
+    background:var(--dark3); border:1.5px solid transparent; border-radius:10px;
+    padding:10px 12px; font-size:0.82rem; line-height:1.5;
+    margin-bottom:8px; cursor:pointer; transition:all 0.2s; color:var(--text);
+  }
+  .c-option:hover { border-color:rgba(255,209,102,0.3); background:var(--card2); }
+  .c-option.selected { border-color:var(--gold); background:rgba(255,209,102,0.07); }
+
+  /* NOTE / WARN */
+  .note-box {
+    background:rgba(0,229,255,0.07); border:1px solid rgba(0,229,255,0.2);
+    border-radius:10px; padding:10px 14px; font-size:0.8rem;
+    color:var(--text-dim); line-height:1.6; margin-top:12px;
+  }
+  .note-box strong { color:var(--cyan); }
+  .warn-box {
+    background:rgba(239,71,111,0.1); border:1px solid rgba(239,71,111,0.3);
+    border-radius:10px; padding:10px 14px; font-size:0.8rem;
+    color:#ff8aa5; line-height:1.6; margin:10px 0;
+    display:flex; gap:8px; align-items:flex-start;
+  }
+
+  /* WORKOUT */
+  .workout-phase { background:var(--dark3); border:1.5px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .phase-title { display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:800; margin-bottom:12px; }
+  .phase-badge { padding:3px 10px; border-radius:6px; font-size:0.7rem; font-weight:700; }
+  .badge-before { background:rgba(255,107,53,0.2); color:var(--orange); }
+  .badge-during { background:rgba(0,229,255,0.15); color:var(--cyan); }
+  .badge-after  { background:rgba(6,214,160,0.15); color:var(--green); }
+  .workout-option {
+    padding:10px 12px; background:var(--card); border-radius:10px;
+    font-size:0.85rem; line-height:1.6; margin-bottom:8px;
+    border-right:3px solid var(--cyan); color:var(--text);
+  }
+  .workout-option strong { color:var(--gold); }
+  .or-divider { text-align:center; font-size:0.75rem; color:var(--text-dim); margin:4px 0; font-weight:700; }
+
+  /* TIPS */
+  .tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; margin-top:12px; }
+  .tip-card {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:14px; padding:16px; display:flex; gap:12px;
+    align-items:flex-start; transition:border-color 0.2s;
+  }
+  .tip-card:hover { border-color:rgba(0,229,255,0.3); }
+  .tip-icon { font-size:1.4rem; flex-shrink:0; margin-top:2px; }
+  .tip-text { font-size:0.84rem; line-height:1.6; color:var(--text); }
+  .tip-text strong { color:var(--cyan); display:block; margin-bottom:3px; font-weight:700; }
+
+  /* CHECKLIST */
+  .checklist { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .check-item {
+    display:flex; align-items:center; gap:12px; padding:12px 16px;
+    background:var(--dark3); border:1.5px solid transparent; border-radius:12px;
+    cursor:pointer; transition:all 0.2s; font-size:0.88rem; color:var(--text);
+  }
+  .check-item:hover { border-color:var(--border); }
+  .check-item.done { border-color:var(--green); background:rgba(6,214,160,0.07); color:var(--text-dim); text-decoration:line-through; }
+  .check-box {
+    width:22px; height:22px; border:2px solid var(--text-dim); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:all 0.2s; font-size:0.8rem;
+  }
+  .check-item.done .check-box { background:var(--green); border-color:var(--green); color:#000; font-weight:900; }
+
+  /* PROGRESS */
+  .progress-section { margin-top:20px; }
+  .progress-label { display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-dim); margin-bottom:6px; font-weight:600; }
+  .progress-bar { height:8px; background:var(--dark3); border-radius:4px; overflow:hidden; margin-bottom:14px; }
+  .progress-fill { height:100%; border-radius:4px; transition:width 0.5s ease; }
+
+  /* SECTION TITLE */
+  .section-title { font-size:1.1rem; font-weight:800; color:var(--text); margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .section-desc { font-size:0.8rem; color:var(--text-dim); margin-bottom:16px; }
+
+  /* FOOTER */
+  footer { text-align:center; padding:30px 0; color:var(--text-dim); font-size:0.75rem; border-top:1px solid var(--border); margin-top:20px; }
+  .back-top {
+    position:fixed; bottom:80px; left:24px; width:44px; height:44px;
+    background:var(--cyan); border-radius:50%; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; color:#000; font-size:1.1rem;
+    box-shadow:var(--glow); z-index:99; opacity:0; transition:opacity 0.3s;
+  }
+  .back-top.visible { opacity:1; }
+
+  /* SUCCESS TOAST */
+  .toast {
+    position:fixed; top:20px; left:50%; transform:translateX(-50%);
+    background:var(--green); color:#000; padding:10px 24px;
+    border-radius:50px; font-weight:800; font-size:0.85rem;
+    z-index:999; opacity:0; transition:opacity 0.3s;
+    pointer-events:none; white-space:nowrap;
+  }
+  .toast.show { opacity:1; }
+
+  @media(max-width:600px){
+    .logo { font-size:1.3rem; }
+    .header-title h1 { font-size:1rem; }
+    .protein-carb-grid { grid-template-columns:1fr; }
+    .tips-grid { grid-template-columns:1fr; }
+    .snack-grid { grid-template-columns:1fr 1fr; }
+    .macros-row { gap:12px; }
+    .macro-num { font-size:1.1rem; }
+    .form-row { grid-template-columns:1fr; }
+  }
+  @media(max-width:380px){
+    .snack-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- FULL PAGE LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">Coach Béchir 7016</div>
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">محتوى خاص</div>
+    <div class="lock-sub">هذه الخطة الغذائية مخصصة لك فقط.<br>أدخل كلمة المرور للوصول.</div>
+    <input type="password" class="pw-input" id="lockInput" placeholder="••••••••••"
+      onkeydown="if(event.key==='Enter')checkLock()" autofocus />
+    <div class="form-error" id="lockError" style="display:none;text-align:center;margin-bottom:8px;">كلمة المرور غير صحيحة ❌</div>
+    <button class="form-btn" onclick="checkLock()">دخول 🚀</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ تم تحديث الخطة بنجاح!</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal-box">
+    <div class="pw-screen">
+      <div class="pw-icon">🔐</div>
+      <div class="pw-title">وضع الكوتش</div>
+      <div class="pw-sub">أدخل كلمة المرور للوصول إلى لوحة التحكم</div>
+      <input type="password" class="pw-input" id="pwInput" placeholder="••••••••••"
+        onkeydown="if(event.key==='Enter')checkPW()" />
+      <div class="form-error" id="pwError">كلمة المرور غير صحيحة ❌</div>
+      <button class="form-btn" onclick="checkPW()">دخول</button>
+      <button onclick="closeModal('pwModal')" style="background:none;border:none;color:var(--text-dim);font-family:Cairo,sans-serif;font-size:0.8rem;cursor:pointer;margin-top:12px;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- COACH MODAL -->
+<div class="modal-overlay" id="coachModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      🏋️ لوحة الكوتش — إنشاء خطة جديدة
+      <button class="modal-close" onclick="closeModal('coachModal')">×</button>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">اسم الحريف</label>
+        <input type="text" class="form-input" id="clientName" placeholder="مثال: أحمد" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">الجنس</label>
+        <select class="form-select" id="clientGender">
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">العمر (سنة)</label>
+        <input type="number" class="form-input" id="clientAge" placeholder="25" min="10" max="80" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">الوزن (كيلو)</label>
+        <input type="number" class="form-input" id="clientWeight" placeholder="80" min="30" max="250" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الطول (سم)</label>
+        <input type="number" class="form-input" id="clientHeight" placeholder="175" min="100" max="220" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">مستوى النشاط</label>
+        <select class="form-select" id="clientActivity">
+          <option value="1.2">خامل (بدون رياضة)</option>
+          <option value="1.375">خفيف (1-3 أيام)</option>
+          <option value="1.55" selected>متوسط (3-5 أيام)</option>
+          <option value="1.725">عالي (6-7 أيام)</option>
+          <option value="1.9">مكثف جداً</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">الهدف</label>
+      <select class="form-select" id="clientGoal">
+        <option value="cut">خسارة دهون (عجز 650 سعرة)</option>
+        <option value="recomp">إعادة تركيب الجسم (عجز 400 سعرة)</option>
+        <option value="maintain">تثبيت الوزن</option>
+        <option value="bulk">بناء عضل (فائض 400 سعرة)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">ملاحظات خاصة (اختياري)</label>
+      <input type="text" class="form-input" id="clientNotes" placeholder="مثال: لا يحب السمك، يتمرن صباحاً..." />
+    </div>
+
+    <div class="form-error" id="formError">يرجى ملء جميع الحقول المطلوبة</div>
+    <button class="form-btn" onclick="generatePlan()">🚀 إنشاء الخطة الآن</button>
+  </div>
+</div>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo" style="font-size:1rem;letter-spacing:2px;line-height:1.3;text-transform:none">Coach Béchir<br><span style="font-size:0.85rem;letter-spacing:3px">7016</span></div>
+      <div class="header-title">
+        <h1 id="pageTitle">خطة بشير الغذائية</h1>
+        <span id="pageSubtitle">خسارة الدهون · بناء العضلات</span>
+      </div>
+      <div class="calories-badge" id="calBadge">2000 سعرة</div>
+    </div>
+  </div>
+</header>
+
+<div class="total-bar">
+  <div class="container">
+    <div class="macros-row">
+      <div class="macro-item">
+        <div class="macro-num" id="macroCalories">2000</div>
+        <div class="macro-label">سعرة حرارية</div>
+      </div>
+      <div class="macro-divider"></div>
+      <div class="macro-item">
+        <div class="macro-num" id="macroProtein" style="color:var(--orange)">+150g</div>
+        <div class="macro-label">بروتين يومي</div>
+      </div>
+      <div class="macro-divider"></div>
+      <div class="macro-item">
+        <div class="macro-num" style="color:var(--gold)">5</div>
+        <div class="macro-label">وجبات يومياً</div>
+      </div>
+      <div class="macro-divider"></div>
+      <div class="macro-item">
+        <div class="macro-num" id="macroWater" style="color:var(--green)">2-4L</div>
+        <div class="macro-label">ماء يومي</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('checklist')">✅ قائمة اليوم</button>
+    <button class="tab-btn" onclick="showTab('breakfast')">🌅 الفطور</button>
+    <button class="tab-btn" onclick="showTab('snack')">🍎 السناك</button>
+    <button class="tab-btn" onclick="showTab('lunch')">🍗 الغداء</button>
+    <button class="tab-btn" onclick="showTab('workout')">💪 التمرين</button>
+    <button class="tab-btn" onclick="showTab('dinner')">🌙 العشاء</button>
+    <button class="tab-btn" onclick="showTab('tips')">📋 التعليمات</button>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="section active" id="tab-checklist">
+    <div style="padding-top:20px">
+      <div id="clientBanner"></div>
+      <div class="section-title">✅ قائمة متابعة اليوم</div>
+      <div class="section-desc">اضغط على كل عنصر بعد تنفيذه لتتابع التزامك اليومي</div>
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>التقدم اليومي</span>
+          <span id="progress-text">0 / 8</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width:0%;background:linear-gradient(90deg,var(--cyan),var(--green))"></div>
+        </div>
+      </div>
+      <div class="checklist" id="daily-checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>🌅 <strong>الفطور</strong> — <span class="cal-breakfast">350</span> سعرة (حاول تأخيره قدر الإمكان)</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>🍎 <strong>السناك</strong> — <span class="cal-snack">200</span> سعرة (ثبّت موعده للتحكم بالجوع)</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>🍗 <strong>الغداء</strong> — <span class="cal-lunch">700</span> سعرة (بروتين + كربوهيدرات + سلطة)</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>💪 <strong>وجبة التمرين</strong> — <span class="cal-workout">500</span> سعرة (قبل + بعد)</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>🌙 <strong>العشاء</strong> — <span class="cal-dinner">350</span> سعرة (بروتين + كربوهيدرات + سلطة)</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>💧 <strong>الماء</strong> — شرب <span id="waterGoal">2-4</span> لتر على الأقل</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>💊 <strong>المكملات</strong> — أوميغا 3 + فيتامين D + مغنيسيوم 400</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <span>😴 <strong>النوم</strong> — 6.5 إلى 8 ساعات نوم عميق</span>
+        </div>
+      </div>
+      <div class="note-box" style="margin-top:16px">
+        <strong>📸 التقييم الأسبوعي:</strong> كل أسبوعين — صباحاً، معدة فارغة، ملابس خفيفة، قبل أي وجبة، صور واضحة بإضاءة ممتازة.
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAKFAST -->
+  <div class="section" id="tab-breakfast">
+    <div style="padding-top:20px">
+      <div class="meal-card open">
+        <div class="meal-header" onclick="toggleCard(this.parentElement)">
+          <div class="meal-icon" style="background:linear-gradient(135deg,rgba(255,209,102,0.2),rgba(255,107,53,0.2))">🌅</div>
+          <div class="meal-info">
+            <div class="meal-name">الفطور</div>
+            <div class="meal-sub">حاول تأخيره قدر الإمكان للشبع أطول</div>
+          </div>
+          <div class="meal-cal"><span class="cal-breakfast">350</span> <span>سعرة</span></div>
+          <div class="meal-toggle">▼</div>
+        </div>
+        <div class="meal-body">
+          <div class="note-box">
+            🔑 <strong>مع كل وجبة فطور:</strong> جرعة ملتي فيتامين + بي كومبلكس + خضار 250 جرام | الخبز: ممكن أسمر أو أبيض أو صاج أو شوفان
+          </div>
+          <div class="options-label">اختر خياراً واحداً للفطور</div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">1</div>
+            <div class="option-text">خبز أسمر <strong id="b1_bread">55</strong> جرام + كبدة قبل الطبخ <strong id="b1_liver">100</strong> جرام مقلية مع بصل + <strong>5</strong> جرام زيت زيتون</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">2</div>
+            <div class="option-text">خبز <strong id="b2_bread">60</strong> جرام + موزاريلا قليلة السعرات <strong id="b2_mozz">60</strong> جرام أو جبنة بقرية (أريش) <strong id="b2_cheese">120</strong> جرام</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">3</div>
+            <div class="option-text">خبز أسمر <strong id="b3_bread">35</strong> جرام أو بطاطا مسلوقة <strong id="b3_potato">100</strong> جرام + <strong id="b3_eggs">3</strong> بيضات كبيرة (ممكن تقلي ببخاخ الزيت)</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">4</div>
+            <div class="option-text">رقائق فتنس <strong id="b4_flakes">45</strong> جرام + حليب أو لبن <strong id="b4_milk">130</strong> مل + واي بروتين <strong id="b4_whey">25</strong> جرام</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">5</div>
+            <div class="option-text">خبز أسمر <strong id="b5_bread">70</strong> جرام + صدر حبش مدخن أو كتف عجل قليل السعرات <strong id="b5_turkey">120</strong> جرام</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">6</div>
+            <div class="option-text">خبز أسمر <strong id="b6_bread">70</strong> جرام + صدر حبش مدخن <strong id="b6_turkey">80</strong> جرام + موزاريلا <strong id="b6_mozz">20</strong> جرام<br><small style="color:var(--red)">⚠️ المرتديلا: 100-130 سعرة لكل 100 جرام · لا تعتمد أكثر من 3 مرات أسبوعياً</small></div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">7</div>
+            <div class="option-text">خبز <strong id="b7_bread">40</strong> جرام + جبنة بقرية (أريش) <strong id="b7_cheese">50</strong> جرام + <strong id="b7_eggs">2</strong> بيضة كاملة</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">8</div>
+            <div class="option-text"><strong>عجة البيض المشوية بالفرن:</strong> <strong id="b8_eggs">2</strong> بيض كبيرة + 1 بياض + بصل، زعتر، بقدونس + زهرة <strong id="b8_cauli">200</strong> جرام + ملح وفلفل + طحين <strong id="b8_flour">20</strong> جرام + بخاخ الزيت</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">9</div>
+            <div class="option-text">🎂 كيك بروتين أو وافل بروتين بقيمة <strong class="cal-breakfast">350</strong> سعرة (من ملف الوصفات)</div>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'breakfast')">
+            <div class="option-num">10</div>
+            <div class="option-text">🍽️ أي وصفة من دليل الوصفات (وصفات فطور أو وصفات <strong class="cal-breakfast">350</strong> سعرة)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNACK -->
+  <div class="section" id="tab-snack">
+    <div style="padding-top:20px">
+      <div class="meal-card open">
+        <div class="meal-header" onclick="toggleCard(this.parentElement)">
+          <div class="meal-icon" style="background:linear-gradient(135deg,rgba(6,214,160,0.2),rgba(0,229,255,0.2))">🍎</div>
+          <div class="meal-info">
+            <div class="meal-name">السناك</div>
+            <div class="meal-sub">مرة في اليوم — ثبّت موعده للتحكم بالجوع</div>
+          </div>
+          <div class="meal-cal"><span class="cal-snack">200</span> <span>سعرة</span></div>
+          <div class="meal-toggle">▼</div>
+        </div>
+        <div class="meal-body">
+          <div class="note-box">💡 يمكن إلغاء السناك وتحويله لدهون صحية وإضافته لأي وجبة | يمكن إضافة سناك إضافي لو شعرت بجوع غير محتمل</div>
+          <div class="options-label">اختر سناك يناسبك (اضغط عليه)</div>
+          <div class="snack-grid" id="snackGrid">
+            <!-- Snack items rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LUNCH -->
+  <div class="section" id="tab-lunch">
+    <div style="padding-top:20px">
+      <div class="meal-card open">
+        <div class="meal-header" onclick="toggleCard(this.parentElement)">
+          <div class="meal-icon" style="background:linear-gradient(135deg,rgba(255,107,53,0.2),rgba(255,209,102,0.2))">🍗</div>
+          <div class="meal-info">
+            <div class="meal-name">الغداء</div>
+            <div class="meal-sub">بروتين + كربوهيدرات + سلطة</div>
+          </div>
+          <div class="meal-cal"><span class="cal-lunch">700</span> <span>سعرة</span></div>
+          <div class="meal-toggle">▼</div>
+        </div>
+        <div class="meal-body">
+          <div class="note-box" id="lunchWeightNote">
+            ⚖️ <strong>أوزان قبل الطبخ:</strong> البروتين × 1.4 | الكربوهيدرات ÷ 3.3
+          </div>
+          <div class="note-box" style="margin-top:8px; border-color:rgba(6,214,160,0.2); background:rgba(6,214,160,0.05); color:var(--text-dim)">
+            🥗 سلطة <span id="lunchSaladGrams">250</span> جرام + ممكن معلقة خل طبيعي | الطبخ: بخاخ الزيت أو أقل كمية زيت ممكنة
+          </div>
+          <div class="protein-carb-grid" style="margin-top:16px">
+            <div class="protein-col">
+              <div class="p-col-header">🥩 اختر البروتين</div>
+              <div class="p-option" onclick="selectP(this)">
+                سمك مشوي أو سردين أو <strong>كبدة مشوية</strong><br>
+                <strong style="color:var(--orange)" id="lp1">270</strong> جرام<br>
+                <small style="color:var(--text-dim)">الكبدة: 3 مرات أسبوعياً كحد أقصى</small>
+              </div>
+              <div class="p-option" onclick="selectP(this)">
+                لحم بدون دهن أو فخذ دجاج أو مشاوي<br>
+                <strong style="color:var(--orange)" id="lp2">300</strong> جرام<br>
+                <small style="color:var(--red)">⚠️ قلّل الكاربوهيدرات للنصف مع هذا الخيار</small>
+              </div>
+              <div class="p-option" onclick="selectP(this)">
+                صدر دجاج أو صدر حبش<br>
+                <strong style="color:var(--orange)" id="lp3">260</strong> جرام
+              </div>
+              <div class="p-option" onclick="selectP(this)">
+                بروست صحي بالمقلاة الهوائية<br>
+                <strong style="color:var(--orange)" id="lp4">350</strong> جرام<br>
+                <small style="color:var(--red)">⚠️ ألغِ الكاربوهيدرات كلياً مع هذا الخيار</small>
+              </div>
+            </div>
+            <div class="carb-col">
+              <div class="p-col-header" style="background:rgba(255,209,102,0.12);color:var(--gold)">🌾 اختر الكربوهيدرات</div>
+              <div class="c-option" onclick="selectC(this)">معكرونة<br><strong style="color:var(--gold)" id="lc1">140</strong> جرام</div>
+              <div class="c-option" onclick="selectC(this)">رز بدون زيت <strong style="color:var(--gold)" id="lc2a">150</strong> جرام أو رز بزيت <strong style="color:var(--gold)" id="lc2b">100</strong> جرام</div>
+              <div class="c-option" onclick="selectC(this)">برغل أو فريكة<br><strong style="color:var(--gold)" id="lc3">140</strong> جرام</div>
+              <div class="c-option" onclick="selectC(this)">خبز أسمر<br><strong style="color:var(--gold)" id="lc4">70</strong> جرام</div>
+              <div class="c-option" onclick="selectC(this)">بطاطا مسلوقة مالحة أو حلوة<br><strong style="color:var(--gold)" id="lc5">190</strong> جرام</div>
+              <div class="c-option" onclick="selectC(this)">ذرة مسلوقة<br><strong style="color:var(--gold)" id="lc6">150</strong> جرام</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT -->
+  <div class="section" id="tab-workout">
+    <div style="padding-top:20px">
+      <div class="meal-card open">
+        <div class="meal-header" onclick="toggleCard(this.parentElement)">
+          <div class="meal-icon" style="background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(6,214,160,0.2))">💪</div>
+          <div class="meal-info">
+            <div class="meal-name">وجبة التمرين</div>
+            <div class="meal-sub">قبل + أثناء + بعد — مهما كان موعد تمرينك</div>
+          </div>
+          <div class="meal-cal"><span class="cal-workout">500</span> <span>سعرة</span></div>
+          <div class="meal-toggle">▼</div>
+        </div>
+        <div class="meal-body">
+          <div class="workout-phase">
+            <div class="phase-title"><span class="phase-badge badge-before">قبل التمرين بـ 30 دقيقة</span></div>
+            <div class="workout-option">مشروب طاقة بدون سكر + <strong>5 جرام</strong> بيتا ألانين + <strong>5 جرام</strong> سيترولين + تمر <strong id="pre1_dates">50</strong> جرام</div>
+            <div class="or-divider">— أو —</div>
+            <div class="workout-option">سكوب مكمل طاقة قوي للتمارين الشديدة + تمر <strong id="pre2_dates">50</strong> جرام</div>
+            <div class="or-divider">— أو —</div>
+            <div class="workout-option">كاسة نسكافيه (كافيين) + حليب خالي الدسم <strong id="pre3_milk">150</strong> مل + زبدة فستق <strong id="pre3_pb">20</strong> جرام</div>
+          </div>
+          <div class="workout-phase">
+            <div class="phase-title"><span class="phase-badge badge-during">أثناء التمرين</span></div>
+            <div class="workout-option" style="border-right-color:var(--cyan)">💧 <strong id="workoutWater">لتر ماء على الأقل</strong> — يُضاف عليه 1 جرام ملح أو مكمل إليكترولايت</div>
+          </div>
+          <div class="workout-phase">
+            <div class="phase-title"><span class="phase-badge badge-after">بعد التمرين</span></div>
+            <div class="workout-option" style="border-right-color:var(--green)"><strong>5 جرام كرياتين</strong> + سكوب واي بروتين (إجمالي <strong id="post1_whey">45</strong> جرام) + <strong>تفاحة</strong></div>
+            <div class="or-divider">— أو —</div>
+            <div class="workout-option" style="border-right-color:var(--green)"><strong id="post2_chicken">120</strong> جرام صدر دجاج مشوي + بطاطا مسلوقة <strong id="post2_potato">70</strong> جرام + كرياتين <strong>5 جرام</strong></div>
+            <div class="or-divider">— أو —</div>
+            <div class="workout-option" style="border-right-color:var(--green)"><strong>2 علبة</strong> لبن بروتين قليل السعرات + كرياتين <strong>5 جرام</strong></div>
+          </div>
+          <div class="note-box">📅 <strong>يوم الراحة:</strong> وجبة بعد التمرين تظل ثابتة حتى في أيام الراحة</div>
+          <div class="note-box" style="margin-top:8px; border-color:rgba(255,209,102,0.25); background:rgba(255,209,102,0.06)">
+            🔄 <strong>بدائل الواي بروتين:</strong> 65 جرام صدر مشوي = 6 بياض بيض = 100 جرام تونة مصفاة = علبة لبن بروتين
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DINNER -->
+  <div class="section" id="tab-dinner">
+    <div style="padding-top:20px">
+      <div class="meal-card open">
+        <div class="meal-header" onclick="toggleCard(this.parentElement)">
+          <div class="meal-icon" style="background:linear-gradient(135deg,rgba(100,50,200,0.25),rgba(0,100,180,0.25))">🌙</div>
+          <div class="meal-info">
+            <div class="meal-name">العشاء</div>
+            <div class="meal-sub">بروتين + كربوهيدرات + سلطة <span id="dinnerSaladGrams">300</span> جرام</div>
+          </div>
+          <div class="meal-cal"><span class="cal-dinner">350</span> <span>سعرة</span></div>
+          <div class="meal-toggle">▼</div>
+        </div>
+        <div class="meal-body">
+          <div class="note-box">
+            ⚖️ <strong>أوزان قبل الطبخ:</strong> البروتين × 1.4 | الكربوهيدرات ÷ 3.7
+          </div>
+          <div class="warn-box">⚠️ يوم الراحة من التمرين: قلّل كربوهيدرات العشاء للنصف</div>
+          <div class="protein-carb-grid" style="margin-top:12px">
+            <div class="protein-col">
+              <div class="p-col-header">🥩 اختر البروتين</div>
+              <div class="p-option" onclick="selectPD(this)">سمك مشوي أو سردين<br><strong style="color:var(--orange)" id="dp1">100</strong> جرام</div>
+              <div class="p-option" onclick="selectPD(this)">لحم بدون دهن أو مشاوي أو فخذ دجاج<br><strong style="color:var(--orange)" id="dp2">140</strong> جرام<br><small style="color:var(--red)">⚠️ ألغِ نصف الكربوهيدرات</small></div>
+              <div class="p-option" onclick="selectPD(this)">صدر دجاج أو صدر حبش<br><strong style="color:var(--orange)" id="dp3">85</strong> جرام</div>
+            </div>
+            <div class="carb-col">
+              <div class="p-col-header" style="background:rgba(255,209,102,0.12);color:var(--gold)">🌾 اختر الكربوهيدرات</div>
+              <div class="c-option" onclick="selectCD(this)">معكرونة <strong style="color:var(--gold)" id="dc1">120</strong> جرام أو خبز أسمر <strong style="color:var(--gold)" id="dc1b">65</strong> جرام</div>
+              <div class="c-option" onclick="selectCD(this)">رز مغلي <strong style="color:var(--gold)" id="dc2">130</strong> جرام أو بطاطا مالحة/حلوة <strong style="color:var(--gold)" id="dc2b">140</strong> جرام</div>
+              <div class="c-option" onclick="selectCD(this)">برغل أو فريكة<br><strong style="color:var(--gold)" id="dc3">130</strong> جرام</div>
+            </div>
+          </div>
+          <div class="note-box" style="margin-top:12px">
+            💊 <strong>مكملات العشاء:</strong> حبتين أوميغا 3 + فيتامين D 2000 + مغنيسيوم 400 | يفضل إضافة الميلاتونين والأشواغندا لتحسين النوم
+          </div>
+          <div class="note-box" style="margin-top:8px; border-color:rgba(100,200,255,0.2)">
+            ✅ يمكن اعتماد أي خيار من خيارات الفطور كعشاء 3 مرات أسبوعياً
+          </div>
+          <div style="margin-top:16px; background:var(--dark3); border-radius:14px; padding:16px; border:1px solid var(--border)">
+            <div style="font-size:0.85rem; font-weight:800; color:var(--cyan); margin-bottom:10px">🍱 تجهيز وجبات الأسبوع (موصى به)</div>
+            <div style="font-size:0.82rem; color:var(--text); line-height:1.8" id="weeklyPrep">
+              • <strong id="weekChicken">3600</strong> جرام صدر دجاج قبل الطبخ<br>
+              • <strong id="weekRice">550</strong> جرام أرز أو برغل قبل الطبخ<br>
+              • <strong>30</strong> جرام زيت زيتون للطبخ أو بخاخ<br>
+              • السلطة الخضراء يومياً <strong>300</strong> جرام مع كل وجبة<br>
+              • خل تفاح طبيعي + توابل مسموحة + ملح<br>
+              <br>
+              <span style="color:var(--cyan); font-weight:700">القسمة: الكمية الكاملة ÷ 14 وجبة = 2 وجبات يومياً (غداء + عشاء)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div class="section" id="tab-tips">
+    <div style="padding-top:20px">
+      <div class="section-title">📋 التعليمات الأساسية</div>
+      <div class="section-desc">اقرأها مرة واحدة وسيصبح الالتزام أسهل بكثير</div>
+      <div class="tips-grid">
+        <div class="tip-card"><div class="tip-icon">🍳</div><div class="tip-text"><strong>الأوزان بعد الطبخ</strong>كل الكميات في الخطة هي بعد الطبخ، ما عدا ما كُتب عليه "قبل الطبخ" صراحةً</div></div>
+        <div class="tip-card"><div class="tip-icon">⏰</div><div class="tip-text"><strong>مواعيد الوجبات</strong>غير إلزامية لكن يُفضّل تثبيتها على مواعيد ثابتة تناسبك لضبط الجوع</div></div>
+        <div class="tip-card"><div class="tip-icon">💧</div><div class="tip-text"><strong>الماء ضروري جداً</strong>2 إلى 4 لتر يومياً — ابتعد عن الماء المقطر أو المغلي لأنه يُدرّ البول</div></div>
+        <div class="tip-card"><div class="tip-icon">🥗</div><div class="tip-text"><strong>الخضروات والسلطة</strong>مهمة جداً لتجنب الإمساك وزيادة الشبع — لا تُهملها أبداً</div></div>
+        <div class="tip-card"><div class="tip-icon">🧂</div><div class="tip-text"><strong>الملح والبهارات</strong>لا تقطع الملح نهائياً — استخدم ملح هيمالايا أو صخري 7-10 جرام ونوّع في البهارات</div></div>
+        <div class="tip-card"><div class="tip-icon">🍬</div><div class="tip-text"><strong>المحليات الصناعية</strong>مسموحة بدل السكر: سكرين، سويت آند لو، ستيفيا</div></div>
+        <div class="tip-card"><div class="tip-icon">🥤</div><div class="tip-text"><strong>المشروبات المسموحة</strong>كولا دايت، زيرو، سبرايت دايت — أي مشروب خالي السعرات مسموح</div></div>
+        <div class="tip-card"><div class="tip-icon">😴</div><div class="tip-text"><strong>النوم أساسي</strong>6.5 إلى 8 ساعات نوم عميق يومياً — إذا واجهت مشاكل تناول الميلاتونين</div></div>
+        <div class="tip-card"><div class="tip-icon">🚶</div><div class="tip-text"><strong>زد من حركتك</strong>تعامل مع مجهودك اليومي كأنه تمرين — زيادة الحركة تفرق كثيراً في النتائج</div></div>
+        <div class="tip-card"><div class="tip-icon">📸</div><div class="tip-text"><strong>التقييم الأسبوعي</strong>ميزان + مقاسات + صور الجسم كل أسبوع أو أسبوعين — صباحاً، معدة فارغة، ملابس خفيفة</div></div>
+        <div class="tip-card"><div class="tip-icon">🚫</div><div class="tip-text"><strong>لا للسناكات العشوائية</strong>أي سناك إضافي بكميات أكثر مما هو مكتوب سيسبب ثبات النتائج كلياً</div></div>
+        <div class="tip-card"><div class="tip-icon">🎯</div><div class="tip-text"><strong>الهدف الأسمى</strong>تغيير عاداتك الغذائية السيئة وإيجاد بدائل صحية للأشياء التي تحبها</div></div>
+      </div>
+      <div style="margin-top:20px; background:var(--dark3); border:1.5px solid rgba(255,209,102,0.2); border-radius:16px; padding:18px">
+        <div style="font-size:0.9rem; font-weight:800; color:var(--gold); margin-bottom:12px">💊 المكملات الغذائية اليومية</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--cyan); font-weight:700; margin-bottom:4px">الفطور</div>ملتي فيتامين + بي كومبلكس</div>
+          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--green); font-weight:700; margin-bottom:4px">بعد التمرين</div>5 جرام كرياتين + واي بروتين</div>
+          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--gold); font-weight:700; margin-bottom:4px">العشاء</div>أوميغا 3 (حبتين) + فيتامين D 2000 + مغنيسيوم 400</div>
+          <div style="background:var(--card); border-radius:10px; padding:12px; font-size:0.82rem; line-height:1.6"><div style="color:var(--text-dim); font-weight:700; margin-bottom:4px">للنوم (اختياري)</div>ميلاتونين + أشواغندا</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- COACH FLOATING BTN -->
+<button class="coach-btn" id="coachBtnEl" onclick="openCoachFlow()">🏋️ وضع الكوتش</button>
+
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<footer>
+  <div class="container">
+    <div style="color:var(--cyan); font-weight:700; font-size:0.9rem; margin-bottom:6px">Coach Béchir 7016 | <span id="footerName">خطة بشير الغذائية</span></div>
+    <div id="footerMacros">2000 سعرة · 150+ جرام بروتين · خسارة الدهون وبناء العضلات</div>
+    
+  </div>
+</footer>
+
+<script>
+// ─── LOCK SCREEN ─────────────────────────────────────────────────────────────
+const LOCK_PASSWORD = "وفاء";
+
+function checkLock() {
+  const val = document.getElementById("lockInput").value;
+  if (val === LOCK_PASSWORD) {
+    const ls = document.getElementById("lockScreen");
+    ls.style.transition = "opacity 0.5s";
+    ls.style.opacity = "0";
+    setTimeout(() => ls.remove(), 500);
+  } else {
+    const inp = document.getElementById("lockInput");
+    inp.classList.add("shake");
+    document.getElementById("lockError").style.display = "block";
+    inp.value = "";
+    setTimeout(() => inp.classList.remove("shake"), 500);
+  }
+}
+
+// ─── DEFAULT (BASHIR) DATA ───────────────────────────────────────────────────
+const DEFAULT = {
+  name: 'بشير',
+  gender: 'male',
+  weight: 80,
+  height: 175,
+  age: 27,
+  activity: 1.55,
+  goal: 'cut',
+  notes: '',
+  totalCal: 2000,
+  protein: 160,
+  breakfast: 350,
+  snack: 200,
+  lunch: 700,
+  workout: 500,
+  dinner: 350
+};
+
+let current = {...DEFAULT};
+let coachUnlocked = false;
+
+// ─── CALCULATIONS ─────────────────────────────────────────────────────────────
+function calcPlan(data) {
+  const w = parseFloat(data.weight);
+  const h = parseFloat(data.height);
+  const a = parseFloat(data.age);
+  const act = parseFloat(data.activity);
+  const gender = data.gender;
+
+  // BMR (Mifflin-St Jeor)
+  let bmr = gender === 'male'
+    ? (10 * w) + (6.25 * h) - (5 * a) + 5
+    : (10 * w) + (6.25 * h) - (5 * a) - 161;
+
+  let tdee = Math.round(bmr * act);
+
+  // Goal adjustment
+  const goalMap = { cut: -650, recomp: -400, maintain: 0, bulk: 400 };
+  let totalCal = tdee + (goalMap[data.goal] || -400);
+  totalCal = Math.max(1200, Math.min(4000, totalCal));
+
+  // Protein: recomp gets higher protein 2.4g/kg, others 1.8-2.1g
+  let protein = Math.round(w * (data.goal === 'recomp' ? 2.4 : gender === 'male' ? 2.0 : 1.8));
+
+  // Meal split (roughly fixed ratios, adjusted to total)
+  const base = totalCal;
+  const breakfast = Math.round(base * 0.175);
+  const snack     = Math.round(base * 0.10);
+  const workout   = Math.round(base * 0.25);
+  const dinner    = Math.round(base * 0.175);
+  const lunch     = totalCal - breakfast - snack - workout - dinner;
+
+  // Scale factor vs Bashir's base
+  const sf = totalCal / 2000;
+
+  return {
+    totalCal, protein, breakfast, snack, lunch, workout, dinner, sf,
+    water: Math.round(w * 0.035 * 10) / 10
+  };
+}
+
+function scaleGrams(base, sf) {
+  return Math.round(base * sf / 5) * 5 || 5;
+}
+
+// ─── APPLY PLAN ───────────────────────────────────────────────────────────────
+function applyPlan(data, calc) {
+  const sf = calc.sf;
+
+  // Header
+  document.getElementById('pageTitle').textContent = 'خطة ' + data.name + ' الغذائية';
+  document.getElementById('calBadge').textContent = calc.totalCal + ' سعرة';
+  document.getElementById('macroCalories').textContent = calc.totalCal;
+  document.getElementById('macroProtein').textContent = '+' + calc.protein + 'g';
+  document.getElementById('macroWater').textContent = calc.water + 'L';
+  document.getElementById('waterGoal').textContent = calc.water;
+  document.getElementById('footerName').textContent = 'خطة ' + data.name + ' الغذائية';
+  document.getElementById('footerMacros').textContent =
+    calc.totalCal + ' سعرة · ' + calc.protein + '+ جرام بروتين · ' +
+    (data.goal === 'cut' ? 'خسارة الدهون' : data.goal === 'recomp' ? 'خسارة الدهون وبناء العضلات' : data.goal === 'maintain' ? 'تثبيت الوزن' : 'بناء العضلات');
+
+  // Calories in each section
+  document.querySelectorAll('.cal-breakfast').forEach(el => el.textContent = calc.breakfast);
+  document.querySelectorAll('.cal-snack').forEach(el => el.textContent = calc.snack);
+  document.querySelectorAll('.cal-lunch').forEach(el => el.textContent = calc.lunch);
+  document.querySelectorAll('.cal-workout').forEach(el => el.textContent = calc.workout);
+  document.querySelectorAll('.cal-dinner').forEach(el => el.textContent = calc.dinner);
+
+  // ── BREAKFAST options ──
+  setG('b1_bread', 55, sf); setG('b1_liver', 100, sf);
+  setG('b2_bread', 60, sf); setG('b2_mozz', 60, sf); setG('b2_cheese', 120, sf);
+  setG('b3_bread', 35, sf); setG('b3_potato', 100, sf);
+  document.getElementById('b3_eggs').textContent = sf >= 1.2 ? '4' : sf >= 0.85 ? '3' : '2';
+  setG('b4_flakes', 45, sf); setG('b4_milk', 130, sf); setG('b4_whey', 25, sf);
+  setG('b5_bread', 70, sf); setG('b5_turkey', 120, sf);
+  setG('b6_bread', 70, sf); setG('b6_turkey', 80, sf); setG('b6_mozz', 20, sf);
+  setG('b7_bread', 40, sf);
+  setG('b7_cheese', 50, sf);
+  document.getElementById('b7_eggs').textContent = sf >= 1.3 ? '3' : '2';
+  document.getElementById('b8_eggs').textContent = sf >= 1.3 ? '3' : '2';
+  setG('b8_cauli', 200, sf); setG('b8_flour', 20, sf);
+
+  // ── LUNCH proteins ──
+  setG('lp1', 270, sf); setG('lp2', 300, sf); setG('lp3', 260, sf); setG('lp4', 350, sf);
+  // ── LUNCH carbs ──
+  setG('lc1', 140, sf); setG('lc2a', 150, sf); setG('lc2b', 100, sf);
+  setG('lc3', 140, sf); setG('lc4', 70, sf); setG('lc5', 190, sf); setG('lc6', 150, sf);
+  document.getElementById('lunchSaladGrams').textContent = sf >= 1.2 ? '300' : '250';
+
+  // ── WORKOUT ──
+  setG('pre1_dates', 50, sf); setG('pre2_dates', 50, sf);
+  setG('pre3_milk', 150, sf); setG('pre3_pb', 20, sf);
+  setG('post1_whey', 45, sf);
+  setG('post2_chicken', 120, sf); setG('post2_potato', 70, sf);
+  document.getElementById('workoutWater').textContent =
+    calc.water >= 3 ? 'لترين ماء على الأقل' : 'لتر ماء على الأقل';
+
+  // ── DINNER proteins ──
+  setG('dp1', 100, sf); setG('dp2', 140, sf); setG('dp3', 85, sf);
+  // ── DINNER carbs ──
+  setG('dc1', 120, sf); setG('dc1b', 65, sf);
+  setG('dc2', 130, sf); setG('dc2b', 140, sf); setG('dc3', 130, sf);
+  document.getElementById('dinnerSaladGrams').textContent = sf >= 1.2 ? '350' : '300';
+
+  // ── WEEKLY PREP ──
+  const weekChicken = scaleGrams(3600, sf);
+  const weekRice    = scaleGrams(550, sf);
+  document.getElementById('weekChicken').textContent = weekChicken;
+  document.getElementById('weekRice').textContent    = weekRice;
+
+  // ── SNACK ITEMS ──
+  renderSnacks(sf);
+
+  // ── CLIENT BANNER ──
+  const goalLabels = {
+    cut:'خسارة دهون', recomp:'تركيب الجسم', maintain:'تثبيت الوزن', bulk:'بناء عضل'
+  };
+  const goalClass = data.goal === 'cut' ? 'goal-cut' :
+                    data.goal === 'bulk' ? 'goal-bulk' :
+                    data.goal === 'recomp' ? 'goal-bulk' : 'goal-maintain';
+  const initials = data.name.substring(0,2);
+  const bmiVal = (data.weight / ((data.height/100)**2)).toFixed(1);
+  document.getElementById('clientBanner').innerHTML = data.name !== 'بشير' ? `
+    <div class="client-banner">
+      <div class="client-avatar">${initials}</div>
+      <div class="client-info">
+        <div class="client-name">${data.name}</div>
+        <div class="client-details">${data.gender==='male'?'ذكر':'أنثى'} · ${data.age} سنة · ${data.weight} كيلو · ${data.height} سم · BMI: ${bmiVal}</div>
+        ${data.notes ? '<div class="client-details" style="color:var(--gold);margin-top:2px">📝 ' + data.notes + '</div>' : ''}
+      </div>
+      <div class="client-goal-badge ${goalClass}">${goalLabels[data.goal]||data.goal}</div>
+    </div>` : '';
+}
+
+function setG(id, base, sf) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = scaleGrams(base, sf);
+}
+
+// ─── SNACK ITEMS ─────────────────────────────────────────────────────────────
+function renderSnacks(sf) {
+  const s = (b) => scaleGrams(b, sf);
+  const snacks = [
+    `بروتين بار ${s(200)} سعرة + قهوة`,
+    `علبة لبن زبادي ${s(200)} سعرة`,
+    `شيبس زبدة فستق ${s(40)} جرام`,
+    `شوكولا مرة %60 كاكاو ${s(35)} جرام`,
+    `شوكولاتة مرة ${s(17)} جرام + نسكافيه مع حليب`,
+    `${s(60)} جرام تمر أو ${s(200)} جرام بطاطا حلوة`,
+    `${s(50)} جرام فشار بدون زيت`,
+    `${s(140)} جرام أفوكادو`,
+    `${s(600)} جرام بطيخ أو شمام أو حمضيات`,
+    `${s(2)} موزة كبيرة`,
+    `300 مل عصير ليمون + عسل ${s(15)} جرام`,
+    `${s(30)} جرام عين جمل أو زبدة لوز`,
+    `${s(40)} جرام لب بزر`,
+    `${s(40)} جرام مكسرات نيئة`,
+    `${s(1)} كيلو خضار مشكلة`,
+    `${s(40)} جرام حلويات`,
+    `${s(45)} جرام بسكويت سادة أو محشو`,
+    `${s(22)} جرام زيت زيتون للطبخ`,
+    `${s(120)} جرام صدر مشوي أو فخذ`
+  ];
+  document.getElementById('snackGrid').innerHTML = snacks.map(t =>
+    `<div class="snack-item" onclick="this.classList.toggle('selected')"><div class="snack-dot"></div>${t}</div>`
+  ).join('');
+}
+
+// ─── COACH FLOW ───────────────────────────────────────────────────────────────
+function openCoachFlow() {
+  if (coachUnlocked) {
+    openModal('coachModal');
+  } else {
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwError').style.display = 'none';
+    document.getElementById('pwInput').classList.remove('shake');
+    openModal('pwModal');
+  }
+}
+
+function checkPW() {
+  const val = document.getElementById('pwInput').value;
+  if (val === 'Bashtech26') {
+    coachUnlocked = true;
+    closeModal('pwModal');
+    setTimeout(() => openModal('coachModal'), 200);
+    document.getElementById('coachBtnEl').classList.add('active');
+  } else {
+    const inp = document.getElementById('pwInput');
+    inp.classList.add('shake');
+    document.getElementById('pwError').style.display = 'block';
+    setTimeout(() => inp.classList.remove('shake'), 500);
+  }
+}
+
+function generatePlan() {
+  const name   = document.getElementById('clientName').value.trim();
+  const age    = document.getElementById('clientAge').value;
+  const weight = document.getElementById('clientWeight').value;
+  const height = document.getElementById('clientHeight').value;
+  const err = document.getElementById('formError');
+
+  if (!name || !age || !weight || !height) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+
+  const data = {
+    name,
+    gender:   document.getElementById('clientGender').value,
+    age:      parseInt(age),
+    weight:   parseFloat(weight),
+    height:   parseFloat(height),
+    activity: parseFloat(document.getElementById('clientActivity').value),
+    goal:     document.getElementById('clientGoal').value,
+    notes:    document.getElementById('clientNotes').value.trim()
+  };
+
+  const calc = calcPlan(data);
+  current = {...data, ...calc};
+  applyPlan(data, calc);
+  closeModal('coachModal');
+  showToast('✅ تم إنشاء خطة ' + name + ' — ' + calc.totalCal + ' سعرة');
+  window.scrollTo({top:0, behavior:'smooth'});
+  // Reset daily checklist
+  document.querySelectorAll('.check-item').forEach(i => i.classList.remove('done'));
+  updateProgress();
+}
+
+// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function toggleCard(card) { card.classList.toggle('open'); }
+function selectOption(el, group) {
+  document.querySelectorAll(`#tab-${group} .option-item`).forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectP(el) {
+  document.querySelectorAll('#tab-lunch .protein-col .p-option').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectC(el) {
+  document.querySelectorAll('#tab-lunch .carb-col .c-option').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectPD(el) {
+  document.querySelectorAll('#tab-dinner .protein-col .p-option').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectCD(el) {
+  document.querySelectorAll('#tab-dinner .carb-col .c-option').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleCheck(el) {
+  el.classList.toggle('done');
+  updateProgress();
+}
+function updateProgress() {
+  const items = document.querySelectorAll('#daily-checklist .check-item');
+  const done  = document.querySelectorAll('#daily-checklist .check-item.done').length;
+  const pct   = Math.round((done/items.length)*100);
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = done+' / '+items.length;
+  const fill = document.getElementById('progress-fill');
+  if(pct===100) fill.style.background='linear-gradient(90deg,var(--green),#00e5aa)';
+  else if(pct>=60) fill.style.background='linear-gradient(90deg,var(--cyan),var(--green))';
+  else fill.style.background='linear-gradient(90deg,var(--cyan),var(--cyan-dim))';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+
+// Back to top
+window.addEventListener('scroll', () => {
+  document.getElementById('backTop').classList.toggle('visible', window.scrollY > 300);
+});
+
+// ─── INIT with Bashir defaults ────────────────────────────────────────────────
+(function init() {
+  const calc = {
+    totalCal: 2000, protein: 160, breakfast: 350, snack: 200,
+    lunch: 700, workout: 500, dinner: 350, sf: 1.0, water: 2.8
+  };
+  applyPlan(DEFAULT, calc);
+})();
+</script>
+</body>
+</html>
